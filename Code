@@ -40,14 +40,14 @@ pie(table(dataset$species),main = "Pie chart species",col=c("red","blue","coral"
 pairs(dataset[,1:4],col=dataset[,5],oma=c(4,4,6,12))
 par(xpd=TRUE)
 legend(0.85,0.6, as.vector(unique(dataset$species)),fill=c(1,2,3))
-
+#=============================================================================================
 # Using 3D Plot 
 #install.packages("plot3D")
 # install.packages(c("rgl", "car"))
-install.packages("car")
-library("car")
-scatter3d(x = dataset$sepal_length, y = dataset$sepal_width, z = dataset$petal_length)
-
+#install.packages("car")
+#library("car")
+#scatter3d(x = dataset$sepal_length, y = dataset$sepal_width, z = dataset$petal_length)
+#==============================================================================================
 # Encoding categorical data by using factor function
 
 dataset$species=factor(dataset$species,levels=c("setosa","versicolor","virginica"),labels=c(1,2,3))
@@ -63,33 +63,62 @@ plot(model1, main="C5.0 Decision Tree - Unpruned, min=1")
 model2 <- C5.0(input, output, control = C5.0Control(noGlobalPruning = FALSE))
 plot(model2, main="C5.0 Decision Tree - Pruned")
 summary(model2)
-
+#==================================================================================================
 # RANDOM FOREST CLASSIFICATION
 #install.packages("randomForest") 
-library(randomForest) 
-iris.rf=randomForest(species ~ .,  
-                        data = dataset,  
-                        importance = TRUE, 
-                        proximity = TRUE) 
-print(iris.rf) 
-png(file = "randomForestClassification.png") 
+#library(randomForest) 
+#iris.rf=randomForest(species ~ .,data = dataset, importance = TRUE,  proximity = TRUE) 
+#print(iris.rf) 
+#png(file = "randomForestClassification.png") 
 
 # Plot the error vs the number of trees graph 
-plot(iris.rf) 
+#plot(iris.rf) 
 
 # Saving the file 
- dev.off() 
+# dev.off() 
 
 
-#library(caTools)
+library(caTools)
 #set.seed(123)   #  set seed to ensure we always have same random numbers generated
-#sample= sample.split(dataset$species,SplitRatio = 0.8) # splits the data in the ratio mentioned in SplitRatio. After splitting marks these rows as logical TRUE and the the remaining are marked as logical FALSE
-#training_set =subset(dataset,sample ==TRUE) # creates a training dataset named train1 with rows which are marked as TRUE
-#test_set=subset(dataset, sample ==FALSE)
+
 
 # Feature Scaling  
 #training_set[,2:3] = scale(training_set[,2:3])
 #test_set[,2:3]= scale(test_set[,2:3])
+#=====================================================================================================
+# random Forest Classification 
+library(randomForest)
+library(MASS)
+
+#install.packages("caret")
+library(caret)
 
 
+# Use the set.seed function so that we get same results each time 
+set.seed(123)
+sample= sample.split(dataset$species,SplitRatio = 0.8) # splits the data in the ratio mentioned in SplitRatio. After splitting marks these rows as logical TRUE and the the remaining are marked as logical FALSE
+training_set =subset(dataset,sample ==TRUE) # creates a training dataset named train1 with rows which are marked as TRUE
+test_set=subset(dataset, sample ==FALSE)
+
+rf = randomForest(species~., data=training_set)
+rf  # Description of the random forest with no of trees, mtry = no of variables for splitting
+
+pred1 = predict(rf, training_set)
+head(pred1)
+
+head(training_set$species)
+
+# looks like the first six predicted value and original value matches.
+#install.packages("e1071")
+library(e1071)
+confusionMatrix(pred1, training_set$species)  # 100 % accuracy on training data 
+
+# Around 95% Confidence Interval.Sensitivity for all three species/categories is 100 % 
+
+# Prediction with test data - Test Data 
+pred2 = predict(rf, test_set)
+confusionMatrix(pred2, test_set$species) # 90 % accuracy on test data 
+
+# Error Rate in Random Forest Model :
+plot(rf)
 
