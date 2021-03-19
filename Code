@@ -1,13 +1,25 @@
-## Data Preprocessing 
+
 # Importing Dataset
 
 dataset=read.csv("iris.csv")
+#=================================================================================================
+# Create my_data
+#dataset= iris
+# Convert to a tibble
+#library("tibble")
+#dataset= as_data_frame(my_data)
+
+
+# To rearrange the columns 
+#col_order =c("Sepal.Length",  "Sepal.Width", "Petal.Length", "Petal.Width","Species")
+#dataset_1 = dataset[, col_order]
+
 # Splitting dataset into testset and training set
 #install.packages("caTools")
 # install.packages("MASS")
 #install.packages("ggplot.multistats")
 #install.packages("ggplot2")
-
+#===================================================================================================
 library(ggplot2) # Data visualization
 ## Data Visualisation 
 
@@ -48,6 +60,10 @@ legend(0.85,0.6, as.vector(unique(dataset$species)),fill=c(1,2,3))
 #library("car")
 #scatter3d(x = dataset$sepal_length, y = dataset$sepal_width, z = dataset$petal_length)
 #==============================================================================================
+#install.packages("GGally")
+library(GGally)
+ggpairs(dataset)
+
 # Encoding categorical data by using factor function
 
 dataset$species=factor(dataset$species,levels=c("setosa","versicolor","virginica"),labels=c(1,2,3))
@@ -97,7 +113,7 @@ library(caret)
 # Use the set.seed function so that we get same results each time 
 set.seed(123)
 sample= sample.split(dataset$species,SplitRatio = 0.8) # splits the data in the ratio mentioned in SplitRatio. After splitting marks these rows as logical TRUE and the the remaining are marked as logical FALSE
-training_set =subset(dataset,sample ==TRUE) # creates a training dataset named train1 with rows which are marked as TRUE
+training_set =subset(dataset,sample ==TRUE) # creates a training dataset with rows which are marked as TRUE
 test_set=subset(dataset, sample ==FALSE)
 
 rf = randomForest(species~., data=training_set)
@@ -122,3 +138,17 @@ confusionMatrix(pred2, test_set$species) # 90 % accuracy on test data
 # Error Rate in Random Forest Model :
 plot(rf)
 
+# Classification Using KNN
+install.packages("class")
+library(class)
+error = c()
+for (i in 1:15)
+{
+  knn.fit = knn(train = training_set[,1:4], test = test_set[,1:4], cl = training_set$species, k = i)
+  error[i] = 1- mean(knn.fit == test_set$species)
+}
+ggplot(data = data.frame(error), aes(x = 1:15, y = error)) +geom_line(color = "Blue")
+
+iris_pred = knn(train = test_set[,1:4], test = test_set[,1:4], cl = test_set$species, k=3)
+
+table(test_set$species,iris_pred)
